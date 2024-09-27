@@ -1,48 +1,58 @@
 import express, { Request, Response } from 'express';
-import { Complex } from './complex';
 import { Qubit, MultiQubit } from './qubit';
-import { BlochCoordinates, SimulateResponse } from './types';
+import { BlochCoordinates, MultiQubitResponse, QubitMeasurement, SimulateResponse } from './types';
 
 const app = express();
 const port = 3000;
 
 // Route to simulate a single qubit and return probabilities
 app.get('/simulate', (req: Request, res: Response<SimulateResponse>) => {
-    const alpha = new Complex(1 / Math.sqrt(2), 0); // |0⟩
-    const beta = new Complex(1 / Math.sqrt(2), 0);  // |1⟩
-    const qubit = new Qubit(alpha, beta);
+  const qubit = new Qubit(); // Generate a random qubit
 
-    const result = qubit.measure();
-    const { probZero, probOne } = qubit.measureProbabilities();
-    res.json({
-        result,
-        state: `|ψ⟩ = ${alpha.real}|0⟩ + ${beta.real}|1⟩`,
-        probabilities: { probZero, probOne }
-    });
+  const result = qubit.measure();
+  const { probZero, probOne } = qubit.measureProbabilities();
+  res.json({
+    result,
+    state: `|ψ⟩ = ${qubit.alpha.real}|0⟩ + ${qubit.beta.real}|1⟩`,
+    probabilities: { probZero, probOne }
+  });
 });
 
 // Route to get the Bloch sphere coordinates
-app.get('/bloch', (req: Request, res: Response<BlochCoordinates>) => {
-    const alpha = new Complex(1 / Math.sqrt(2), 0); // |0⟩
-    const beta = new Complex(1 / Math.sqrt(2), 0);  // |1⟩
-    const qubit = new Qubit(alpha, beta);
+app.get('/bloch', (req: Request, res: Response<{ coordinates: BlochCoordinates, description: string }>) => {
+  const qubit = new Qubit(); // Generate a random qubit
 
-    const { theta, phi } = qubit.toBlochCoordinates();
-    res.json({ theta, phi });
+  const { theta, phi } = qubit.toBlochCoordinates();
+  const description = `Theta (polar angle): ${theta.toFixed(3)} radians, Phi (azimuthal angle): ${phi.toFixed(3)} radians`;
+  res.json({
+    coordinates: { theta, phi },
+    description
+  });
 });
 
 // Route to simulate multiple qubits in a system
-app.get('/multi-simulate', (req: Request, res: Response) => {
-    const qubits = [
-        { alpha: new Complex(1 / Math.sqrt(2), 0), beta: new Complex(1 / Math.sqrt(2), 0) },
-        { alpha: new Complex(1 / Math.sqrt(2), 0), beta: new Complex(1 / Math.sqrt(2), 0) }
-    ];
-    const multiQubit = new MultiQubit(qubits);
+app.get('/multi-simulate', (req: Request, res: Response<MultiQubitResponse>) => {
+  const qubit1 = new Qubit(); // Generate a random qubit
+  const qubit2 = new Qubit(); // Generate another random qubit
+  const multiQubit = new MultiQubit([{ alpha: qubit1.alpha, beta: qubit1.beta }, { alpha: qubit2.alpha, beta: qubit2.beta }]);
 
-    const result = multiQubit.measureSystem();
-    res.json({ result });
+  const results = multiQubit.measureSystem();
+
+  const qubits: QubitMeasurement[] = results.map((result, index) => {
+    const qubit = index === 0 ? qubit1 : qubit2;
+    const { probZero, probOne } = qubit.measureProbabilities();
+    return {
+      id: index + 1,
+      result,
+      probabilities: { probZero, probOne }
+    };
+  });
+
+  const description = `Measured ${qubits.length} qubits with probabilities and results.`;
+
+  res.json({ qubits, description });
 });
 
 app.listen(port, () => {
-    console.log(`Qubit simulator app running at http://localhost:${port}`);
+  console.log(`Qubit simulator app running at http://localhost:${port}`);
 });

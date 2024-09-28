@@ -1,0 +1,121 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Qubit Simulator API",
+      "version": "1.0.0",
+      "description": "API for simulating qubits and quantum states."
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000",
+        "description": "Local server"
+      }
+    ],
+    "paths": {
+      "/simulate": {
+        "get": {
+          "summary": "Simulate a single qubit",
+          "responses": {
+            "200": {
+              "description": "Returns the measurement result and state of a single qubit",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "result": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "state": {
+                        "type": "string",
+                        "example": "|ψ⟩ = 0.707|0⟩ + 0.707|1⟩"
+                      },
+                      "probabilities": {
+                        "type": "object",
+                        "properties": {
+                          "probZero": {
+                            "type": "number",
+                            "example": 0.5
+                          },
+                          "probOne": {
+                            "type": "number",
+                            "example": 0.5
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/bloch": {
+        "get": {
+          "summary": "Get Bloch sphere coordinates",
+          "responses": {
+            "200": {
+              "description": "Returns the Bloch sphere coordinates for a qubit",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "coordinates": {
+                        "type": "object",
+                        "properties": {
+                          "theta": { "type": "number" },
+                          "phi": { "type": "number" }
+                        }
+                      },
+                      "description": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/multi-simulate": {
+        "get": {
+          "summary": "Simulate multiple qubits",
+          "responses": {
+            "200": {
+              "description": "Returns the results of measuring multiple qubits",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "qubits": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "integer" },
+                            "result": { "type": "integer" },
+                            "probabilities": {
+                              "type": "object",
+                              "properties": {
+                                "probZero": { "type": "number" },
+                                "probOne": { "type": "number" }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "description": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

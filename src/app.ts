@@ -1,9 +1,14 @@
 import express, { Request, Response } from 'express';
 import { Qubit, MultiQubit } from './qubit';
 import { BlochCoordinates, MultiQubitResponse, QubitMeasurement, SimulateResponse } from './types';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../swagger.json';
+
 
 const app = express();
 const port = 3000;
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Route to simulate a single qubit and return probabilities
 app.get('/simulate', (req: Request, res: Response<SimulateResponse>) => {
